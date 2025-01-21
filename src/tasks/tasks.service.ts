@@ -29,7 +29,15 @@ export class TasksService {
     return task;
   }
 
-  deleteTaskById(id: string) {
+  deleteTaskById(id: string): void {
     this.tasks = this.tasks.filter((item) => item.id !== id);
+  }
+
+  updateStatusById(id: string, status: TaskStatus): string | Task {
+    const task = this.getTaskById(id);
+    if (!task) return 'Not Found';
+    task.status = status;
+
+    return task;
   }
 }
