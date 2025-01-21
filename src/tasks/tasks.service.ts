@@ -11,7 +11,7 @@ export class TasksService {
     return this.tasks;
   }
 
-  getTask(id: string): Task {
+  getTaskById(id: string): Task {
     return this.tasks.find((item) => item.id === id);
   }
 
