@@ -1,4 +1,4 @@
-import { CreateTaskDto } from './dto/task.dto';
+import { CreateTaskDto } from './dto/createTask.dto';
 import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { randomUUID } from 'crypto';
