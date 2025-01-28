@@ -7,11 +7,13 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task, TaskStatus } from './task.model';
+import { Task } from './task.model';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { TaskStatusDto } from './dto/taskStatus.dto';
+import { SearchTaskDto } from './dto/searchTask.dto';
 
 @Controller('/tasks')
 export class TasksController {
@@ -20,7 +22,13 @@ export class TasksController {
   }
 
   @Get()
-  getAllTasks(): Task[] {
+  getTasks(@Query() searchTaskDto: SearchTaskDto): Task[] {
+    const { search, status } = searchTaskDto;
+
+    if (search || status) {
+      return this.tasksService.getTasks(search, status);
+    }
+
     return this.tasksService.getAllTasks();
   }
 

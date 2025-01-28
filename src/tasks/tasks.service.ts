@@ -11,6 +11,20 @@ export class TasksService {
     return this.tasks;
   }
 
+  getTasks(search?: string, status?: TaskStatus): Task[] {
+    let filteredTasks = this.tasks;
+
+    if (search) {
+      filteredTasks = this.tasks.filter((task) => task.title.includes(search));
+    }
+
+    if (status) {
+      filteredTasks = filteredTasks.filter((task) => task.status === status);
+    }
+
+    return filteredTasks;
+  }
+
   getTaskById(id: string): Task {
     return this.tasks.find((item) => item.id === id);
   }
