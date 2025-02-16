@@ -26,11 +26,7 @@ export class TasksController {
   getTasks(@Query() searchTaskDto: SearchTaskDto): Promise<Task[]> {
     const { search, status } = searchTaskDto;
 
-    if (search || status) {
-      return this.tasksService.getTasks(search, status);
-    }
-
-    return this.tasksService.getAllTasks();
+    return this.tasksService.getTasks(search, status);
   }
 
   @Get('/:id')

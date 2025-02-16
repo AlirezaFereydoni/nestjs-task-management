@@ -17,19 +17,22 @@ export class TasksService {
   }
 
   async getTasks(search?: string, status?: TaskStatus): Promise<Task[]> {
-    const filters: Record<string, unknown> = {};
+    const query = this.tasksRepository.createQueryBuilder('task');
 
     if (search) {
-      filters.search = Equal(status);
+      query.andWhere(
+        'LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)',
+        {
+          search: `%${search}%`,
+        },
+      );
     }
 
     if (status) {
-      filters.status = Like(`%${search}%`);
+      query.andWhere('task.status = :status', { status });
     }
 
-    return await this.tasksRepository.find({
-      where: filters,
-    });
+    return await query.getMany();
   }
 
   async getTaskById(id: string): Promise<Task> {
