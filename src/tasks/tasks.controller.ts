@@ -14,6 +14,7 @@ import { Task } from './task.model';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { TaskStatusDto } from './dto/taskStatus.dto';
 import { SearchTaskDto } from './dto/searchTask.dto';
+import { UpdateResult } from 'typeorm';
 
 @Controller('/tasks')
 export class TasksController {
@@ -22,7 +23,7 @@ export class TasksController {
   }
 
   @Get()
-  getTasks(@Query() searchTaskDto: SearchTaskDto): Task[] {
+  getTasks(@Query() searchTaskDto: SearchTaskDto): Promise<Task[]> {
     const { search, status } = searchTaskDto;
 
     if (search || status) {
@@ -33,7 +34,7 @@ export class TasksController {
   }
 
   @Get('/:id')
-  getTaskById(@Param('id') id): Task {
+  getTaskById(@Param('id') id): Promise<Task> {
     const task = this.tasksService.getTaskById(id);
 
     if (!task) {
@@ -44,20 +45,21 @@ export class TasksController {
   }
 
   @Post()
-  createTask(@Body() CreateTaskDto: CreateTaskDto): Task {
+  createTask(@Body() CreateTaskDto: CreateTaskDto): Promise<Task> {
     return this.tasksService.createTask(CreateTaskDto);
   }
 
   @Delete('/:id')
-  deleteTaskById(@Param('id') id): void {
-    this.deleteTaskById(id);
+  async deleteTaskById(@Param('id') id): Promise<void> {
+    console.log({ id }, 'in controller');
+    await this.tasksService.deleteTaskById(id);
   }
 
   @Patch('/:id/status')
   updateStatusById(
     @Param('id') id: string,
     @Body() TaskStatusDto: TaskStatusDto,
-  ): string | Task {
+  ): Promise<'Not Found' | UpdateResult> {
     const { status } = TaskStatusDto;
     const response = this.tasksService.updateStatusById(id, status);
 

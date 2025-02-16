@@ -3,12 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { TaskRepository } from './task.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Like } from 'typeorm';
+import { DeleteResult, Equal, Like } from 'typeorm';
+import { Task as TaskEntity } from './task.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectRepository(TaskRepository) private tasksRepository: TaskRepository,
+    @InjectRepository(TaskEntity) private tasksRepository: TaskRepository,
   ) {}
 
   async getAllTasks(): Promise<Task[]> {
@@ -45,12 +46,17 @@ export class TasksService {
       status: TaskStatus.OPEN,
     };
 
-    const newTask = await this.tasksRepository.create(task);
+    const newTask = this.tasksRepository.create(task);
+    await this.tasksRepository.save(newTask);
+
     return newTask;
   }
 
-  async deleteTaskById(id: string) {
-    await this.tasksRepository.delete(id);
+  async deleteTaskById(id: string): Promise<DeleteResult> {
+    const result = await this.tasksRepository.delete(id);
+
+    if (!result.affected) throw new Error('Not Found');
+    return result;
   }
 
   async updateStatusById(id: string, status: TaskStatus) {
