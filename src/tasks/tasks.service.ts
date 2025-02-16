@@ -1,33 +1,34 @@
 import { CreateTaskDto } from './dto/createTask.dto';
 import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
-import { randomUUID } from 'crypto';
 import { TaskRepository } from './task.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Equal, Like } from 'typeorm';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(TaskRepository) private tasksRepository: TaskRepository,
   ) {}
-  private tasks: Task[] = [];
 
   async getAllTasks(): Promise<Task[]> {
     return await this.tasksRepository.find();
   }
 
-  getTasks(search?: string, status?: TaskStatus): Task[] {
-    let filteredTasks = this.tasks;
+  async getTasks(search?: string, status?: TaskStatus): Promise<Task[]> {
+    const filters: Record<string, unknown> = {};
 
     if (search) {
-      filteredTasks = this.tasks.filter((task) => task.title.includes(search));
+      filters.search = Equal(status);
     }
 
     if (status) {
-      filteredTasks = filteredTasks.filter((task) => task.status === status);
+      filters.status = Like(`%${search}%`);
     }
 
-    return filteredTasks;
+    return await this.tasksRepository.find({
+      where: filters,
+    });
   }
 
   async getTaskById(id: string): Promise<Task> {
@@ -36,29 +37,25 @@ export class TasksService {
     return found;
   }
 
-  createTask(createTaskDto: CreateTaskDto) {
+  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
     const { title, description } = createTaskDto;
-    const task: Task = {
-      id: randomUUID(),
+    const task = {
       title,
       description,
       status: TaskStatus.OPEN,
     };
 
-    this.tasks.push(task);
-
-    return task;
+    const newTask = await this.tasksRepository.create(task);
+    return newTask;
   }
 
-  deleteTaskById(id: string): void {
-    this.tasks = this.tasks.filter((item) => item.id !== id);
+  async deleteTaskById(id: string) {
+    await this.tasksRepository.delete(id);
   }
 
-  updateStatusById(id: string, status: TaskStatus): string | Task {
+  async updateStatusById(id: string, status: TaskStatus) {
     const task = this.getTaskById(id);
     if (!task) return 'Not Found';
-    task.status = status;
-
-    return task;
+    return await this.tasksRepository.update(id, { status });
   }
 }
