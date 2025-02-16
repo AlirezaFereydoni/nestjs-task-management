@@ -2,13 +2,18 @@ import { CreateTaskDto } from './dto/createTask.dto';
 import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { randomUUID } from 'crypto';
+import { TaskRepository } from './task.repository';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TasksService {
+  constructor(
+    @InjectRepository(TaskRepository) private tasksRepository: TaskRepository,
+  ) {}
   private tasks: Task[] = [];
 
-  getAllTasks(): Task[] {
-    return this.tasks;
+  async getAllTasks(): Promise<Task[]> {
+    return await this.tasksRepository.find();
   }
 
   getTasks(search?: string, status?: TaskStatus): Task[] {
@@ -25,8 +30,10 @@ export class TasksService {
     return filteredTasks;
   }
 
-  getTaskById(id: string): Task {
-    return this.tasks.find((item) => item.id === id);
+  async getTaskById(id: string): Promise<Task> {
+    const found = this.tasksRepository.findOne({ where: { id } });
+    if (!found) throw new Error('Not Found');
+    return found;
   }
 
   createTask(createTaskDto: CreateTaskDto) {
