@@ -12,10 +12,6 @@ export class TasksService {
     @InjectRepository(TaskEntity) private tasksRepository: TaskRepository,
   ) {}
 
-  async getAllTasks(): Promise<Task[]> {
-    return await this.tasksRepository.find();
-  }
-
   async getTasks(search?: string, status?: TaskStatus): Promise<Task[]> {
     const query = this.tasksRepository.createQueryBuilder('task');
 
